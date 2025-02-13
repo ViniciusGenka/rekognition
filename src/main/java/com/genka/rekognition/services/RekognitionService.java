@@ -5,13 +5,7 @@ import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.rekognition.RekognitionClient;
-import software.amazon.awssdk.services.rekognition.model.CompareFacesMatch;
-import software.amazon.awssdk.services.rekognition.model.CompareFacesRequest;
-import software.amazon.awssdk.services.rekognition.model.CompareFacesResponse;
-import software.amazon.awssdk.services.rekognition.model.DetectLabelsRequest;
-import software.amazon.awssdk.services.rekognition.model.DetectLabelsResponse;
-import software.amazon.awssdk.services.rekognition.model.Image;
-import software.amazon.awssdk.services.rekognition.model.Label;
+import software.amazon.awssdk.services.rekognition.model.*;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -30,46 +24,73 @@ public class RekognitionService {
     }
 
     public List<Label> detectLabels(String imagePath) throws Exception {
+        // Lendo o arquivo da imagem
         byte[] imageBytes = Files.readAllBytes(Paths.get(imagePath));
 
+        // Criando o objeto da imagem
         Image image = Image.builder()
                 .bytes(SdkBytes.fromByteArray(imageBytes))
                 .build();
 
+        // Criando o objeto de requisição da detecção de rótulos,
+        // passando a imagem e as configurações da detecção,
+        // com no máximo 5 rótulos e nível de confiança mínimo de 75%
         DetectLabelsRequest request = DetectLabelsRequest.builder()
                 .image(image)
                 .maxLabels(5)
                 .minConfidence(75F)
                 .build();
 
+        // Chamando a API do Rekognition para detectar os rótulos
         DetectLabelsResponse response = rekognitionClient.detectLabels(request);
         return response.labels();
     }
 
     public List<CompareFacesMatch> compareFaces(String sourceImagePath, String targetImagePath) throws Exception {
-        // Lendo as imagens como byte arrays
+        // Lendo os arquivos das imagens
         byte[] sourceImageBytes = Files.readAllBytes(Paths.get(sourceImagePath));
         byte[] targetImageBytes = Files.readAllBytes(Paths.get(targetImagePath));
 
-        // Criando objetos das imagens
+        // Criando o objeto da imagem de comparação
         Image sourceImage = Image.builder()
                 .bytes(SdkBytes.fromByteArray(sourceImageBytes))
                 .build();
 
+        // Criando o objeto da imagem alvo da comparação
         Image targetImage = Image.builder()
                 .bytes(SdkBytes.fromByteArray(targetImageBytes))
                 .build();
 
         // Criando a requisição de comparação
+        // passando a imagem e as configurações da comparação,
+        // com nível de similaridade mínimo de 80% entre as faces
         CompareFacesRequest request = CompareFacesRequest.builder()
                 .sourceImage(sourceImage)
                 .targetImage(targetImage)
-                .similarityThreshold(80F) // Define o nível de similaridade mínima
+                .similarityThreshold(80F)
                 .build();
 
-        // Chamando a API Rekognition para comparar as faces
+        // Chamando a API do Rekognition para comparar as faces
         CompareFacesResponse response = rekognitionClient.compareFaces(request);
+        return response.faceMatches();
+    }
 
-        return response.faceMatches(); // Retorna a lista de matches encontrados
+    public List<TextDetection> detectText(String imagePath) throws Exception {
+        // Lendo o arquivo da imagem
+        byte[] imageBytes = Files.readAllBytes(Paths.get(imagePath));
+
+        // Criando o objeto da imagem que contém os textos
+        Image image = Image.builder()
+                .bytes(SdkBytes.fromByteArray(imageBytes))
+                .build();
+
+        // Criando a requisição de detecção dos textos na imagem alvo
+        DetectTextRequest request = DetectTextRequest.builder()
+                .image(image)
+                .build();
+
+        // Chamando a API do Rekognition para detectar textos
+        DetectTextResponse response = rekognitionClient.detectText(request);
+        return response.textDetections();
     }
 }
