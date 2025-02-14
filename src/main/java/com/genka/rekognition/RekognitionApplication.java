@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import software.amazon.awssdk.services.rekognition.model.CompareFacesMatch;
 import software.amazon.awssdk.services.rekognition.model.Label;
+import software.amazon.awssdk.services.rekognition.model.ModerationLabel;
 import software.amazon.awssdk.services.rekognition.model.TextDetection;
 
 import java.util.List;
@@ -24,39 +25,33 @@ public class RekognitionApplication implements CommandLineRunner {
 	private void runDetectLabels() throws Exception {
 		String imagePath = "src/main/resources/images/landscape.jpg";
 		List<Label> labels = rekognitionService.detectLabels(imagePath);
-		for (Label label : labels) {
-			System.out.printf("%s (%.2f%% confidence)%n", label.name(), label.confidence());
-		}
+		System.out.println(labels);
 	}
 
 	private void runCompareFaces() throws Exception {
 		String sourceImagePath = "src/main/resources/images/silvio_santos_tv.png";
 		String targetImagePath = "src/main/resources/images/silvio_santos_casual.jpg";
 		List<CompareFacesMatch> matches = rekognitionService.compareFaces(sourceImagePath, targetImagePath);
-
-		if (matches.isEmpty()) {
-			System.out.println("Nenhuma correspondência encontrada!");
-		} else {
-			System.out.println("Rostos encontrados!");
-			for (CompareFacesMatch match : matches) {
-				System.out.printf("Similaridade: %.2f%%\n", match.similarity());
-			}
-		}
+		System.out.println(matches);
 	}
 
 	private void runDetectText() throws Exception {
 		String imagePath = "src/main/resources/images/caneca_tgid.jpeg";
 		List<TextDetection> texts = rekognitionService.detectText(imagePath);
-
-		for (TextDetection text : texts) {
-			System.out.println("Texto: " + text.detectedText());
-			System.out.printf("Confiança: %.2f%%\n", text.confidence());
-			System.out.println("Tipo: " + text.type());
-		}
+		System.out.println(texts);
 	}
+
+	private void runDetectModerationLabels() throws Exception {
+		String imagePath = "src/main/resources/images/tropa_de_elite.jpg";
+		List<ModerationLabel> moderationLabels = rekognitionService.detectModerationLabels(imagePath);
+		System.out.println(moderationLabels);
+	}
+
+
 
 	@Override
 	public void run(String... args) throws Exception {
+		runDetectModerationLabels();
 		runDetectText();
 		runDetectLabels();
 		runCompareFaces();

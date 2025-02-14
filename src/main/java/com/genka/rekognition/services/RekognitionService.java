@@ -93,4 +93,24 @@ public class RekognitionService {
         DetectTextResponse response = rekognitionClient.detectText(request);
         return response.textDetections();
     }
+
+    public List<ModerationLabel> detectModerationLabels(String imagePath) throws Exception {
+        // Lendo o arquivo da imagem
+        byte[] imageBytes = Files.readAllBytes(Paths.get(imagePath));
+
+        // Criando o objeto da imagem alvo
+        Image image = Image.builder()
+                .bytes(SdkBytes.fromByteArray(imageBytes))
+                .build();
+
+        // Criando a requisição de detecção dos rótulos de moderação na imagem alvo
+        DetectModerationLabelsRequest request = DetectModerationLabelsRequest.builder()
+                .image(image)
+                .minConfidence(70F)
+                .build();
+
+        // Chamando a API do Rekognition para detectar os rótulos de moderação
+        DetectModerationLabelsResponse response = rekognitionClient.detectModerationLabels(request);
+        return response.moderationLabels();
+    }
 }
